@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "builds": [{ "src": "dist/server.js", "use": "@vercel/node" }],
+  "routes": [
+    { "src": "/mcp", "methods": ["POST"], "dest": "/dist/server.js" },
+    { "src": "/health", "methods": ["GET"], "dest": "/dist/server.js" }
+  ]
+}

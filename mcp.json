@@ -1,0 +1,183 @@
+{
+  "name": "intrapay-mcp",
+  "version": "1.0.0",
+  "description": "MCP server para operações Pix (cash-in/cash-out) via Intra Pay.",
+  "tools": [
+    {
+      "name": "intrapay_health_check",
+      "description": "Verifica credenciais e resposta da API",
+      "inputSchema": { "type": "object", "properties": {} },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "error"] },
+          "env": { "type": "string", "enum": ["sandbox", "production"] },
+          "details": { "type": "object" }
+        },
+        "required": ["status", "env"]
+      }
+    },
+    {
+      "name": "intrapay_pix_create_static_qrcode",
+      "description": "Gera cobrança Pix estática",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "description": { "type": "string" },
+          "txid": { "type": "string" },
+          "payerName": { "type": "string" },
+          "payerDocument": { "type": "string" },
+          "metadata": { "type": "object" }
+        },
+        "required": ["amount", "description"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "txid": { "type": "string" },
+          "brCode": { "type": "string" },
+          "qrCodeImage": { "type": "string" },
+          "status": { "type": "string" },
+          "rawResponse": { "type": "object" }
+        },
+        "required": ["txid", "brCode", "status", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_pix_create_dynamic_immediate_qrcode",
+      "description": "Gera cobrança Pix dinâmica imediata",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "description": { "type": "string" },
+          "payerName": { "type": "string" },
+          "payerDocument": { "type": "string" },
+          "additionalInfo": { "type": "object" }
+        },
+        "required": ["amount", "description"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "txid": { "type": "string" },
+          "location": { "type": "string" },
+          "brCode": { "type": "string" },
+          "status": { "type": "string" },
+          "rawResponse": { "type": "object" }
+        },
+        "required": ["txid", "brCode", "status", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_pix_create_dynamic_duedate_qrcode",
+      "description": "Gera cobrança Pix dinâmica com vencimento",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "description": { "type": "string" },
+          "dueDate": { "type": "string" },
+          "payerName": { "type": "string" },
+          "payerDocument": { "type": "string" },
+          "additionalInfo": { "type": "object" }
+        },
+        "required": ["amount", "description", "dueDate"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "txid": { "type": "string" },
+          "location": { "type": "string" },
+          "brCode": { "type": "string" },
+          "status": { "type": "string" },
+          "rawResponse": { "type": "object" }
+        },
+        "required": ["txid", "brCode", "status", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_pix_get_charge_status",
+      "description": "Consulta status de cobrança por txid",
+      "inputSchema": { "type": "object", "properties": { "txid": { "type": "string" } }, "required": ["txid"] },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "amount": { "type": "number" },
+          "paidAt": { "type": "string" },
+          "rawResponse": { "type": "object" }
+        },
+        "required": ["status", "amount", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_pix_cash_out_by_account",
+      "description": "Pagamento PIX por conta",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number" },
+          "bankCode": { "type": "string" },
+          "branch": { "type": "string" },
+          "accountNumber": { "type": "string" },
+          "accountType": { "type": "string" },
+          "accountHolderName": { "type": "string" },
+          "accountHolderDocument": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["amount", "bankCode", "branch", "accountNumber", "accountType", "accountHolderName", "accountHolderDocument"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } },
+        "required": ["status", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_pix_cash_out_by_key",
+      "description": "Pagamento PIX por chave",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "amount": { "type": "number" }, "pixKey": { "type": "string" }, "description": { "type": "string" }, "metadata": { "type": "object" } },
+        "required": ["amount", "pixKey"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } },
+        "required": ["status", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_pix_cash_out_by_emv",
+      "description": "Pagamento PIX por EMV",
+      "inputSchema": { "type": "object", "properties": { "amount": { "type": "number" }, "emv": { "type": "string" } }, "required": ["amount", "emv"] },
+      "outputSchema": {
+        "type": "object",
+        "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } },
+        "required": ["status", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_webhook_create",
+      "description": "Cria webhook de eventos",
+      "inputSchema": { "type": "object", "properties": { "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "secret": { "type": "string" } }, "required": ["url", "events"] },
+      "outputSchema": {
+        "type": "object",
+        "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "active": { "type": "boolean" }, "rawResponse": { "type": "object" } },
+        "required": ["id", "url", "events", "active", "rawResponse"]
+      }
+    },
+    {
+      "name": "intrapay_webhook_list",
+      "description": "Lista webhooks",
+      "inputSchema": { "type": "object", "properties": {} },
+      "outputSchema": {
+        "type": "object",
+        "properties": { "webhooks": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "active": { "type": "boolean" } }, "required": ["id", "url", "events", "active"] } }, "rawResponse": { "type": "object" } },
+        "required": ["webhooks", "rawResponse"]
+      }
+    }
+  ]
+}

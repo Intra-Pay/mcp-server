@@ -1,0 +1,35 @@
+{
+  "name": "intrapay-mcp",
+  "version": "1.0.0",
+  "description": "MCP server para operações Pix (cash-in/cash-out) via Intra Pay.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/mcp/server.ts",
+    "build": "tsup src/mcp/server.ts --format esm --sourcemap --dts --clean",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "lint": "eslint \"src/**/*.ts\"",
+    "format": "prettier -w ."
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "express": "^4.19.2",
+    "zod": "^3.23.8",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tsup": "^8.0.1",
+    "vitest": "^2.0.5",
+    "@types/node": "^20.10.6",
+    "@types/express": "^4.17.21",
+    "eslint": "^9.9.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "prettier": "^3.2.5",
+    "tsx": "^4.19.0"
+  },
+  "vitest": {
+    "setupFiles": ["tests/setup-env.ts"]
+  }
+}
