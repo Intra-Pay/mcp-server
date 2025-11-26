@@ -32,6 +32,45 @@ servers:
 - Claude Code (CLI): `claude mcp add --transport http intrapay http://localhost:4000/mcp`
 - MCP Inspector: `npx @modelcontextprotocol/inspector` e conectar `http://localhost:4000/mcp`
 
+## Configuração Manual de MCP (VS Code, Trae, Cursor, Claude)
+- VS Code (manual):
+  - Abra o terminal e rode:
+    - `code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"http://localhost:4000/mcp\"}"`
+  - Alternativa via UI (varia conforme cliente MCP instalado no VS Code):
+    - Abra a paleta de comandos e procure por “Add MCP Server” → HTTP → `http://localhost:4000/mcp`.
+
+- Trae (Windows):
+  - Edite o arquivo de usuário: `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`.
+  - Exemplo:
+  ```json
+  {
+    "servers": {
+      "intrapay": {
+        "type": "http",
+        "url": "http://localhost:4000/mcp",
+        "metadata": {
+          "name": "intrapay-mcp",
+          "version": "1.0.0",
+          "description": "MCP server para operações Pix via Intra Pay"
+        },
+        "timeoutMs": 30000
+      }
+    }
+  }
+  ```
+
+- Cursor:
+  - Abra Settings → MCP → Add Server.
+  - Selecione transporte HTTP e informe `http://localhost:4000/mcp`.
+  - Confirme e peça ao agente para listar tools e executar `intrapay_health_check`.
+
+- Claude Desktop:
+  - CLI: `claude mcp add --transport http intrapay http://localhost:4000/mcp`
+  - Alternativa manual (dependendo da versão): Preferências → MCP → Add Server → HTTP → `http://localhost:4000/mcp`.
+
+- Produção (Railway/Vercel):
+  - Substitua `http://localhost:4000/mcp` por `https://<seu-domínio>/mcp` para clientes MCP.
+
 ## Uso Programático (MCP Client)
 ```ts
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
