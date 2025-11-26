@@ -15,10 +15,21 @@ registerPixTools(server);
 registerWebhookTools(server);
 
 app.post('/mcp', async (req, res) => {
-  const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
-  res.on('close', () => transport.close());
-  await server.connect(transport);
-  await transport.handleRequest(req, res, req.body);
+  try {
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+    res.on('close', () => transport.close());
+    await server.connect(transport);
+    await transport.handleRequest(req, res, req.body);
+  } catch (e) {
+    const payload = {
+      ok: false,
+      result: 'error',
+      errorCode: 'UNKNOWN_ERROR',
+      message: e instanceof Error ? e.message : 'Erro desconhecido',
+      details: e,
+    };
+    res.status(500).json(payload);
+  }
 });
 
 app.get('/health', (_req, res) => {

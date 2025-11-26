@@ -9,8 +9,10 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier -w ."
+    "format": "prettier -w .",
+    "postinstall": "npm run build"
   },
+  "engines": { "node": ">=20" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.23.0",
     "express": "^4.19.2",

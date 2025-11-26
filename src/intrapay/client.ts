@@ -60,18 +60,37 @@ export class IntraPayClient {
       const token = await this.getToken();
       headers['Authorization'] = `Bearer ${token}`;
     }
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) {
-      const details = await res.text().catch(() => undefined);
-      logger.error('http_error', { method, endpoint: path, status: res.status });
-      throw normalizeIntraPayError(res.status, details);
+    const maxAttempts = 3;
+    let attempt = 0;
+    let lastError: unknown;
+    while (attempt < maxAttempts) {
+      try {
+        const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+        if (!res.ok) {
+          const details = await res.text().catch(() => undefined);
+          logger.warn('http_retry_candidate', { method, endpoint: path, status: res.status, attempt });
+          if (res.status === 429 || (res.status >= 500 && res.status <= 504)) {
+            const waitMs = 200 * Math.pow(2, attempt) + Math.floor(Math.random() * 100);
+            await new Promise((r) => setTimeout(r, waitMs));
+            attempt++;
+            lastError = normalizeIntraPayError(res.status, details);
+            continue;
+          }
+          logger.error('http_error', { method, endpoint: path, status: res.status });
+          throw normalizeIntraPayError(res.status, details);
+        }
+        logger.info('http_success', { method, endpoint: path, status: res.status });
+        return (await res.json()) as T;
+      } catch (e) {
+        logger.warn('network_error_retry', { method, endpoint: path, attempt });
+        const waitMs = 200 * Math.pow(2, attempt) + Math.floor(Math.random() * 100);
+        await new Promise((r) => setTimeout(r, waitMs));
+        attempt++;
+        lastError = e;
+      }
     }
-    logger.info('http_success', { method, endpoint: path, status: res.status });
-    return (await res.json()) as T;
+    if (lastError && typeof lastError === 'object' && (lastError as any).httpStatus) throw lastError as any;
+    throw normalizeIntraPayError(500, { reason: 'retry_exhausted', method, path }, 'Falha ao chamar API após retries');
   }
 
   async authenticate(): Promise<AuthResponse> {

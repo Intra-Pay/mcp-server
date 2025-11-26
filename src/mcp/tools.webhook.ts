@@ -1,6 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 import { intrapayClient } from '../intrapay/client';
+import { env } from '../config/env.js';
+import { buildSuccess, normalizeIntraPayError } from '../utils/errors.js';
 
 export const registerWebhookTools = (server: McpServer) => {
   server.registerTool(
@@ -12,9 +14,16 @@ export const registerWebhookTools = (server: McpServer) => {
       outputSchema: { id: z.string(), url: z.string().url(), events: z.array(z.string()), active: z.boolean(), rawResponse: z.any() },
     },
     async (args) => {
-      const res = await intrapayClient.createWebhook({ url: args.url, events: args.events, secret: args.secret });
-      const output = { id: res.id, url: res.url, events: res.events, active: res.active, rawResponse: res };
-      return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
+      try {
+        const secret = args.secret ?? env.webhookSecret;
+        const res = await intrapayClient.createWebhook({ url: args.url, events: args.events, secret });
+        const data = { id: res.id, url: res.url, events: res.events, active: res.active, rawResponse: res };
+        const output = buildSuccess(data);
+        return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
+      } catch (e) {
+        const err = normalizeIntraPayError((e as any).httpStatus || 500, e);
+        return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
+      }
     }
   );
 
@@ -27,9 +36,14 @@ export const registerWebhookTools = (server: McpServer) => {
       outputSchema: { webhooks: z.array(z.object({ id: z.string(), url: z.string(), events: z.array(z.string()), active: z.boolean() })), rawResponse: z.any() },
     },
     async () => {
-      const res = await intrapayClient.listWebhooks();
-      const output = { webhooks: res.webhooks, rawResponse: res };
-      return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
+      try {
+        const res = await intrapayClient.listWebhooks();
+        const output = buildSuccess({ webhooks: res.webhooks, rawResponse: res });
+        return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
+      } catch (e) {
+        const err = normalizeIntraPayError((e as any).httpStatus || 500, e);
+        return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
+      }
     }
   );
 };

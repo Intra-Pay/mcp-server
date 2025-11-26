@@ -10,11 +10,15 @@
       "outputSchema": {
         "type": "object",
         "properties": {
-          "status": { "type": "string", "enum": ["ok", "error"] },
-          "env": { "type": "string", "enum": ["sandbox", "production"] },
+          "ok": { "type": "boolean" },
+          "result": { "type": "string", "enum": ["success", "error"] },
+          "data": { "type": "object", "properties": { "env": { "type": "string" }, "details": { "type": "object" } } },
+          "errorCode": { "type": "string" },
+          "message": { "type": "string" },
+          "httpStatus": { "type": "number" },
           "details": { "type": "object" }
         },
-        "required": ["status", "env"]
+        "required": ["ok", "result"]
       }
     },
     {
@@ -34,14 +38,8 @@
       },
       "outputSchema": {
         "type": "object",
-        "properties": {
-          "txid": { "type": "string" },
-          "brCode": { "type": "string" },
-          "qrCodeImage": { "type": "string" },
-          "status": { "type": "string" },
-          "rawResponse": { "type": "object" }
-        },
-        "required": ["txid", "brCode", "status", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "txid": { "type": "string" }, "brCode": { "type": "string" }, "qrCodeImage": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -60,14 +58,8 @@
       },
       "outputSchema": {
         "type": "object",
-        "properties": {
-          "txid": { "type": "string" },
-          "location": { "type": "string" },
-          "brCode": { "type": "string" },
-          "status": { "type": "string" },
-          "rawResponse": { "type": "object" }
-        },
-        "required": ["txid", "brCode", "status", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "txid": { "type": "string" }, "location": { "type": "string" }, "brCode": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -87,14 +79,8 @@
       },
       "outputSchema": {
         "type": "object",
-        "properties": {
-          "txid": { "type": "string" },
-          "location": { "type": "string" },
-          "brCode": { "type": "string" },
-          "status": { "type": "string" },
-          "rawResponse": { "type": "object" }
-        },
-        "required": ["txid", "brCode", "status", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "txid": { "type": "string" }, "location": { "type": "string" }, "brCode": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -103,13 +89,8 @@
       "inputSchema": { "type": "object", "properties": { "txid": { "type": "string" } }, "required": ["txid"] },
       "outputSchema": {
         "type": "object",
-        "properties": {
-          "status": { "type": "string" },
-          "amount": { "type": "number" },
-          "paidAt": { "type": "string" },
-          "rawResponse": { "type": "object" }
-        },
-        "required": ["status", "amount", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "status": { "type": "string" }, "amount": { "type": "number" }, "paidAt": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -131,8 +112,8 @@
       },
       "outputSchema": {
         "type": "object",
-        "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } },
-        "required": ["status", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -145,8 +126,8 @@
       },
       "outputSchema": {
         "type": "object",
-        "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } },
-        "required": ["status", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -155,8 +136,8 @@
       "inputSchema": { "type": "object", "properties": { "amount": { "type": "number" }, "emv": { "type": "string" } }, "required": ["amount", "emv"] },
       "outputSchema": {
         "type": "object",
-        "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } },
-        "required": ["status", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "transactionId": { "type": "string" }, "status": { "type": "string" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -165,8 +146,8 @@
       "inputSchema": { "type": "object", "properties": { "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "secret": { "type": "string" } }, "required": ["url", "events"] },
       "outputSchema": {
         "type": "object",
-        "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "active": { "type": "boolean" }, "rawResponse": { "type": "object" } },
-        "required": ["id", "url", "events", "active", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "active": { "type": "boolean" }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     },
     {
@@ -175,8 +156,8 @@
       "inputSchema": { "type": "object", "properties": {} },
       "outputSchema": {
         "type": "object",
-        "properties": { "webhooks": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "active": { "type": "boolean" } }, "required": ["id", "url", "events", "active"] } }, "rawResponse": { "type": "object" } },
-        "required": ["webhooks", "rawResponse"]
+        "properties": { "ok": { "type": "boolean" }, "result": { "type": "string", "enum": ["success", "error"] }, "data": { "type": "object", "properties": { "webhooks": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "events": { "type": "array", "items": { "type": "string" } }, "active": { "type": "boolean" } }, "required": ["id", "url", "events", "active"] } }, "rawResponse": { "type": "object" } } } },
+        "required": ["ok", "result"]
       }
     }
   ]

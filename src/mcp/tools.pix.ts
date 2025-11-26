@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 import { intrapayClient } from '../intrapay/client';
-import { normalizeIntraPayError } from '../utils/errors';
+import { buildSuccess, normalizeIntraPayError } from '../utils/errors.js';
 
 export const StaticInput = {
   amount: z.number(),
@@ -76,7 +76,8 @@ export const registerPixTools = (server: McpServer) => {
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
       const res = await intrapayClient.createStaticQRCode({ pixKeyId, amount: args.amount, additionalInformation: args.description, description: args.description });
-      const output = { txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res };
+      const data = { txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res };
+      const output = buildSuccess(data);
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
   );
@@ -91,7 +92,7 @@ export const registerPixTools = (server: McpServer) => {
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
       const res = await intrapayClient.createDynamicImmediateQRCode({ pixKeyId, amount: args.amount });
-      const output = { txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res };
+      const output = buildSuccess({ txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
   );
@@ -106,7 +107,7 @@ export const registerPixTools = (server: McpServer) => {
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
       const res = await intrapayClient.createDynamicDuedateQRCode({ pixKeyId, amount: args.amount, duedate: args.dueDate, debtor: { name: '' } });
-      const output = { txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res };
+      const output = buildSuccess({ txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
   );
@@ -117,10 +118,10 @@ export const registerPixTools = (server: McpServer) => {
     async (args) => {
       try {
         const res = await intrapayClient.getPixChargeStatus(args.txid);
-        const output = { status: res.status, amount: res.amount, paidAt: res.paidAt, rawResponse: res.rawResponse };
+        const output = buildSuccess({ status: res.status, amount: res.amount, paidAt: res.paidAt, rawResponse: res.rawResponse });
         return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
       } catch (e) {
-        const err = normalizeIntraPayError((e as any).status || 501, { txid: args.txid }, 'Consulta de status não implementada');
+        const err = normalizeIntraPayError((e as any).httpStatus || 501, { txid: args.txid }, 'Consulta de status não implementada');
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
     }
@@ -140,7 +141,7 @@ export const registerPixTools = (server: McpServer) => {
         accountType: args.accountType as any,
         description: args.description,
       });
-      const output = { transactionId: res.endToEndId, status: res.status, rawResponse: res };
+      const output = buildSuccess({ transactionId: res.endToEndId, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
   );
@@ -163,7 +164,7 @@ export const registerPixTools = (server: McpServer) => {
         amount: args.amount,
         description: args.description,
       });
-      const output = { transactionId: res.endToEndId, status: res.status, rawResponse: res };
+      const output = buildSuccess({ transactionId: res.endToEndId, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
   );
@@ -173,7 +174,7 @@ export const registerPixTools = (server: McpServer) => {
     { title: 'Pix Cash Out por EMV', description: 'Efetua pagamento via EMV (QR Code)', inputSchema: CashOutEmvInput, outputSchema: CashOutOutput },
     async (args) => {
       const res = await intrapayClient.pixCashOutByEmv({ emv: args.emv, amount: { final: args.amount } });
-      const output = { transactionId: res.endToEndId, status: res.status, rawResponse: res };
+      const output = buildSuccess({ transactionId: res.endToEndId, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
   );

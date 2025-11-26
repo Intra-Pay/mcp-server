@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 import { intrapayClient } from '../intrapay/client';
 import { env } from '../config/env';
+import { buildSuccess, normalizeIntraPayError } from '../utils/errors.js';
 
 export const registerHealthTool = (server: McpServer) => {
   server.registerTool(
@@ -15,11 +16,11 @@ export const registerHealthTool = (server: McpServer) => {
     async () => {
       try {
         const r = await intrapayClient.authenticate();
-        const output = { status: 'ok' as const, env: env.environment, details: { expiresIn: r.expiresIn } };
+        const output = buildSuccess({ env: env.environment, details: { expiresIn: r.expiresIn } });
         return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
       } catch (e) {
-        const output = { status: 'error' as const, env: env.environment, details: e };
-        return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
+        const err = normalizeIntraPayError((e as any).httpStatus || 500, e);
+        return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
     }
   );
