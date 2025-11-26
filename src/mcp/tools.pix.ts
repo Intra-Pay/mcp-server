@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import * as z from 'zod/v4';
+import * as z from 'zod';
 import { intrapayClient } from '../intrapay/client';
-import { buildSuccess, normalizeIntraPayError } from '../utils/errors.js';
+import { buildSuccess, normalizeIntraPayError } from '../utils/errors';
 
 export const StaticInput = {
   amount: z.number(),

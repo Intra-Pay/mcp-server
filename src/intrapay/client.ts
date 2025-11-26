@@ -67,7 +67,12 @@ export class IntraPayClient {
       try {
         const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
         if (!res.ok) {
-          const details = await res.text().catch(() => undefined);
+          let details: unknown = undefined;
+          try {
+            details = await res.json();
+          } catch {
+            details = await res.text().catch(() => undefined);
+          }
           logger.warn('http_retry_candidate', { method, endpoint: path, status: res.status, attempt });
           if (res.status === 429 || (res.status >= 500 && res.status <= 504)) {
             const waitMs = 200 * Math.pow(2, attempt) + Math.floor(Math.random() * 100);

@@ -1,10 +1,10 @@
 import express from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { env } from '../config/env.js';
-import { registerHealthTool } from './tools.health.js';
-import { registerPixTools } from './tools.pix.js';
-import { registerWebhookTools } from './tools.webhook.js';
+import { env } from '../config/env';
+import { registerHealthTool } from './tools.health';
+import { registerPixTools } from './tools.pix';
+import { registerWebhookTools } from './tools.webhook';
 
 const app = express();
 app.use(express.json());

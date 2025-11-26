@@ -1,8 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import * as z from 'zod/v4';
+import * as z from 'zod';
 import { intrapayClient } from '../intrapay/client';
-import { env } from '../config/env.js';
-import { buildSuccess, normalizeIntraPayError } from '../utils/errors.js';
+import { env } from '../config/env';
+import { buildSuccess, normalizeIntraPayError } from '../utils/errors';
 
 export const registerWebhookTools = (server: McpServer) => {
   server.registerTool(
