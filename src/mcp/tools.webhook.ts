@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod';
-import { intrapayClient } from '../intrapay/client';
+import { getCurrentClient } from '../utils/context';
 import { env } from '../config/env';
 import { buildSuccess, normalizeIntraPayError } from '../utils/errors';
 
@@ -16,7 +16,8 @@ export const registerWebhookTools = (server: McpServer) => {
     async (args) => {
       try {
         const secret = args.secret ?? env.webhookSecret;
-        const res = await intrapayClient.createWebhook({ url: args.url, events: args.events, secret });
+        const client = getCurrentClient();
+        const res = await client.createWebhook({ url: args.url, events: args.events, secret });
         const data = { id: res.id, url: res.url, events: res.events, active: res.active, rawResponse: res };
         const output = buildSuccess(data);
         return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
@@ -37,7 +38,8 @@ export const registerWebhookTools = (server: McpServer) => {
     },
     async () => {
       try {
-        const res = await intrapayClient.listWebhooks();
+        const client = getCurrentClient();
+        const res = await client.listWebhooks();
         const output = buildSuccess({ webhooks: res.webhooks, rawResponse: res });
         return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
       } catch (e) {

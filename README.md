@@ -20,17 +20,19 @@ Este projeto inclui um cliente HTTP tipado, schemas validados com Zod e resposta
 
 O servidor MCP da Intra Pay funciona exclusivamente em **Produção** (`api.intrapay.io`).
 
-### Sobre Autenticação e Segurança
-Neste modelo de servidor remoto (SSE/HTTP), **as credenciais da API Intra Pay (`client-key` e `client-secret`) são configuradas no servidor (Lado do Servidor)** e não no seu cliente MCP (Trae/Cursor).
+### Autenticação Multi-Tenant (Suporte a Múltiplos Clientes)
 
-*   **Para uso compartilhado/equipes**: O servidor hospedado em `mcp.intrapay.io` utiliza as credenciais configuradas no deploy.
-*   **Para uso individual**: Se cada desenvolvedor precisa usar suas próprias credenciais, **cada um deve rodar sua própria instância do servidor** (localmente ou via deploy pessoal).
+Este servidor suporta autenticação por requisição. Isso permite que uma única instância hospedada (`https://mcp.intrapay.io/mcp`) atenda a múltiplos clientes, cada um com suas próprias credenciais.
+
+Para isso, o cliente MCP deve enviar as credenciais através dos Headers HTTP:
+*   `x-intrapay-client-key`: Sua Client Key
+*   `x-intrapay-client-secret`: Seu Client Secret
+
+*Se os headers não forem enviados, o servidor usará as credenciais padrão configuradas no ambiente.*
 
 ---
 
 ### Configuração Remota (Recomendado)
-
-O servidor oficial já está hospedado e pronto para uso em: `https://mcp.intrapay.io/mcp`
 
 #### Trae (Windows/Mac)
 Edite o arquivo de configuração (Windows: `%APPDATA%\Trae\User\mcp.json`):
@@ -41,9 +43,12 @@ Edite o arquivo de configuração (Windows: `%APPDATA%\Trae\User\mcp.json`):
     "intrapay": {
       "type": "http",
       "url": "https://mcp.intrapay.io/mcp",
+      "headers": {
+        "x-intrapay-client-key": "SUA_CLIENT_KEY",
+        "x-intrapay-client-secret": "SEU_CLIENT_SECRET"
+      },
       "metadata": {
         "name": "intrapay-mcp",
-        "version": "1.0.0",
         "description": "MCP server para operações Pix via Intra Pay"
       }
     }
@@ -56,6 +61,7 @@ Edite o arquivo de configuração (Windows: `%APPDATA%\Trae\User\mcp.json`):
 2.  Selecione transporte **HTTP** (ou SSE).
 3.  URL: `https://mcp.intrapay.io/mcp`
 4.  Nome: `intrapay`
+*Nota: O Cursor pode não ter interface gráfica para adicionar headers customizados ainda. Se for o caso, use a configuração local ou verifique a documentação atualizada do Cursor.*
 
 ---
 

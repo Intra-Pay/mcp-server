@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod';
-import { intrapayClient } from '../intrapay/client';
+import { getCurrentClient } from '../utils/context';
 import { buildSuccess, normalizeIntraPayError } from '../utils/errors';
 
 export const StaticInput = {
@@ -75,7 +75,8 @@ export const registerPixTools = (server: McpServer) => {
         const err = normalizeIntraPayError(400, { reason: 'pixKeyId ausente em metadata' }, 'Parâmetro obrigatório ausente');
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
-      const res = await intrapayClient.createStaticQRCode({ pixKeyId, amount: args.amount, additionalInformation: args.description, description: args.description });
+      const client = getCurrentClient();
+      const res = await client.createStaticQRCode({ pixKeyId, amount: args.amount, additionalInformation: args.description, description: args.description });
       const data = { txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res };
       const output = buildSuccess(data);
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
@@ -91,7 +92,8 @@ export const registerPixTools = (server: McpServer) => {
         const err = normalizeIntraPayError(400, { reason: 'pixKeyId ausente em additionalInfo' }, 'Parâmetro obrigatório ausente');
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
-      const res = await intrapayClient.createDynamicImmediateQRCode({ pixKeyId, amount: args.amount });
+      const client = getCurrentClient();
+      const res = await client.createDynamicImmediateQRCode({ pixKeyId, amount: args.amount });
       const output = buildSuccess({ txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
@@ -106,7 +108,8 @@ export const registerPixTools = (server: McpServer) => {
         const err = normalizeIntraPayError(400, { reason: 'pixKeyId ausente em additionalInfo' }, 'Parâmetro obrigatório ausente');
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
-      const res = await intrapayClient.createDynamicDuedateQRCode({ pixKeyId, amount: args.amount, duedate: args.dueDate, debtor: { name: '' } });
+      const client = getCurrentClient();
+      const res = await client.createDynamicDuedateQRCode({ pixKeyId, amount: args.amount, duedate: args.dueDate, debtor: { name: '' } });
       const output = buildSuccess({ txid: res.transactionIdentification, brCode: res.emvqrcps, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }
@@ -117,7 +120,8 @@ export const registerPixTools = (server: McpServer) => {
     { title: 'Status de Cobrança Pix', description: 'Consulta status da cobrança por txid', inputSchema: StatusInput, outputSchema: StatusOutput },
     async (args) => {
       try {
-        const res = await intrapayClient.getPixChargeStatus(args.txid);
+        const client = getCurrentClient();
+        const res = await client.getPixChargeStatus(args.txid);
         const output = buildSuccess({ status: res.status, amount: res.amount, paidAt: res.paidAt, rawResponse: res.rawResponse });
         return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
       } catch (e) {
@@ -131,7 +135,8 @@ export const registerPixTools = (server: McpServer) => {
     'intrapay_pix_cash_out_by_account',
     { title: 'Pix Cash Out por Conta', description: 'Efetua pagamento por conta bancária', inputSchema: CashOutAccountInput, outputSchema: CashOutOutput },
     async (args) => {
-      const res = await intrapayClient.pixCashOutByAccount({
+      const client = getCurrentClient();
+      const res = await client.pixCashOutByAccount({
         account: args.accountNumber,
         branch: args.branch,
         bank: args.bankCode,
@@ -155,7 +160,8 @@ export const registerPixTools = (server: McpServer) => {
         const err = normalizeIntraPayError(400, { reason: 'endtoEndId/account/owner ausentes em metadata' }, 'Parâmetros obrigatórios ausentes');
         return { content: [{ type: 'text', text: JSON.stringify(err) }], structuredContent: err };
       }
-      const res = await intrapayClient.pixCashOutByKey({
+      const client = getCurrentClient();
+      const res = await client.pixCashOutByKey({
         key: args.pixKey,
         keyType: 'EVP',
         endtoEndId: String(m['endtoEndId']),
@@ -173,7 +179,8 @@ export const registerPixTools = (server: McpServer) => {
     'intrapay_pix_cash_out_by_emv',
     { title: 'Pix Cash Out por EMV', description: 'Efetua pagamento via EMV (QR Code)', inputSchema: CashOutEmvInput, outputSchema: CashOutOutput },
     async (args) => {
-      const res = await intrapayClient.pixCashOutByEmv({ emv: args.emv, amount: { final: args.amount } });
+      const client = getCurrentClient();
+      const res = await client.pixCashOutByEmv({ emv: args.emv, amount: { final: args.amount } });
       const output = buildSuccess({ transactionId: res.endToEndId, status: res.status, rawResponse: res });
       return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
     }

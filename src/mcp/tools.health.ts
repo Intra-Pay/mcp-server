@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod';
-import { intrapayClient } from '../intrapay/client';
+import { getCurrentClient } from '../utils/context';
 import { buildSuccess, normalizeIntraPayError } from '../utils/errors';
 
 export const registerHealthTool = (server: McpServer) => {
@@ -14,7 +14,8 @@ export const registerHealthTool = (server: McpServer) => {
     },
     async () => {
       try {
-        const r = await intrapayClient.authenticate();
+        const client = getCurrentClient();
+        const r = await client.authenticate();
         const output = buildSuccess({ details: { expiresIn: r.expiresIn } });
         return { content: [{ type: 'text', text: JSON.stringify(output) }], structuredContent: output };
       } catch (e) {
