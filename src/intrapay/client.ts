@@ -50,11 +50,22 @@ class TokenCache {
   }
 }
 
+export interface IntraPayClientConfig {
+  baseUrl: string;
+  clientKey: string;
+  clientSecret: string;
+}
+
 export class IntraPayClient {
   private tokenCache = new TokenCache();
+  private config: IntraPayClientConfig;
+
+  constructor(config: IntraPayClientConfig) {
+    this.config = config;
+  }
 
   private async request<T>(path: string, method: HttpMethod, body?: unknown, auth = true): Promise<T> {
-    const url = `${env.baseUrl}${path}`;
+    const url = `${this.config.baseUrl}${path}`;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (auth) {
       const token = await this.getToken();
@@ -99,7 +110,7 @@ export class IntraPayClient {
   }
 
   async authenticate(): Promise<AuthResponse> {
-    const payload = { clientKey: env.clientKey, clientSecret: env.clientSecret };
+    const payload = { clientKey: this.config.clientKey, clientSecret: this.config.clientSecret };
     const res = await this.request<AuthResponse>(PATHS.authToken, 'POST', payload, false);
     this.tokenCache.set(res.clientToken, res.expiresIn);
     return res;
@@ -169,4 +180,8 @@ export class IntraPayClient {
   }
 }
 
-export const intrapayClient = new IntraPayClient();
+export const intrapayClient = new IntraPayClient({
+  baseUrl: env.baseUrl,
+  clientKey: env.clientKey,
+  clientSecret: env.clientSecret,
+});

@@ -1,164 +1,159 @@
-# Intra Pay MCP Server
+# Servidor MCP Intra Pay
 
-**Servidor MCP 100% em Português**, focado em DX, que expõe operações Pix (cash-in/cash-out) e webhooks da Intra Pay para agentes/IDEs (Claude Desktop, Cursor, OpenAI Agents, etc.). Inclui client HTTP tipado, schemas com Zod e resposta padronizada (`ok`/`result`).
+**Servidor MCP 100% em Português**, focado na experiência de desenvolvimento (DX), que expõe operações Pix (cash-in/cash-out) e webhooks da Intra Pay para agentes e IDEs compatíveis com o Model Context Protocol (MCP), como Claude Desktop, Cursor, Trae e OpenAI Agents.
+
+Este projeto inclui um cliente HTTP tipado, schemas validados com Zod e respostas padronizadas.
+
+## Funcionalidades
+
+*   **Autenticação**: Gerenciamento automático de tokens com cache.
+*   **Pix Cash-In**: Criação de QR Codes estáticos, dinâmicos imediatos e com vencimento.
+*   **Pix Cash-Out**: Pagamentos por chave Pix, dados bancários ou leitura de QR Code (EMV).
+*   **Webhooks**: Criação e listagem de webhooks para notificação de eventos.
+*   **Consultas**: Verificação de status de cobranças (onde suportado).
 
 ## Requisitos
-- Node.js 20+
 
-## Configuração (Local)
-- `npm install`
-- `cp .env.example .env`
-- Preencha `INTRAPAY_BASE_URL`, `INTRAPAY_CLIENT_KEY`, `INTRAPAY_CLIENT_SECRET`, `INTRAPAY_ENV`, `PORT`.
-- No dashboard da Intra Pay, habilite allowlist de IP para chamadas da API.
+*   Node.js 20 ou superior.
 
-## Execução (Local)
-- `npm run dev`
-- MCP HTTP: `POST http://localhost:4000/mcp`
-- Health: `GET http://localhost:4000/health`
+## Instalação e Configuração
 
-## Formato de Resposta
-- Sucesso: `{ ok: true, result: "success", data: { ... } }`
-- Erro: `{ ok: false, result: "error", errorCode, message, httpStatus?, details }`
+Você pode configurar as credenciais de duas formas: via **arquivo `.env`** (para servidores dedicados) ou via **argumentos de linha de comando** (recomendado para uso local com clientes MCP como Claude Desktop).
 
-## Conexão com MCP Clients
-- Claude Desktop / Cursor (HTTP):
-```yaml
-servers:
-  intrapay:
-    url: http://localhost:4000/mcp
-    type: http
+### Opção 1: Configuração via Cliente MCP (Recomendado)
+
+Esta opção é ideal para rodar localmente sem precisar criar arquivos de configuração no servidor. As credenciais ficam salvas apenas na configuração do seu cliente MCP.
+
+#### Claude Desktop
+
+Adicione a configuração ao seu arquivo `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "intrapay": {
+      "command": "node",
+      "args": [
+        "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
+        "--client-key=SUA_CLIENT_KEY",
+        "--client-secret=SEU_CLIENT_SECRET",
+        "--environment=sandbox",
+        "--base-url=https://sandbox.intrapay.com.br"
+      ]
+    }
+  }
+}
 ```
-- VS Code (CLI): `code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"http://localhost:4000/mcp\"}"`
-- Claude Code (CLI): `claude mcp add --transport http intrapay http://localhost:4000/mcp`
-- MCP Inspector: `npx @modelcontextprotocol/inspector` e conectar `http://localhost:4000/mcp`
 
-## Configuração Manual de MCP (VS Code, Trae, Cursor, Claude)
-- VS Code (manual):
-  - Abra o terminal e rode:
-    - `code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"http://localhost:4000/mcp\"}"`
-  - Alternativa via UI (varia conforme cliente MCP instalado no VS Code):
-    - Abra a paleta de comandos e procure por “Add MCP Server” → HTTP → `http://localhost:4000/mcp`.
+#### Argumentos Disponíveis
 
-- Trae (Windows):
-  - Edite o arquivo de usuário: `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`.
-  - Exemplo:
-  ```json
-  {
-    "servers": {
-      "intrapay": {
-        "type": "http",
-        "url": "http://localhost:4000/mcp",
-        "metadata": {
-          "name": "intrapay-mcp",
-          "version": "1.0.0",
-          "description": "MCP server para operações Pix via Intra Pay"
-        },
-        "timeoutMs": 30000
+| Argumento | Variável de Ambiente | Descrição | Obrigatório |
+| :--- | :--- | :--- | :--- |
+| `--client-key` | `INTRAPAY_CLIENT_KEY` | Sua chave de cliente Intra Pay | Sim |
+| `--client-secret` | `INTRAPAY_CLIENT_SECRET` | Seu segredo de cliente Intra Pay | Sim |
+| `--environment` | `INTRAPAY_ENV` | Ambiente (`sandbox` ou `production`) | Sim |
+| `--base-url` | `INTRAPAY_BASE_URL` | URL base da API | Sim |
+| `--port` | `PORT` | Porta do servidor (padrão: 4000) | Não |
+| `--webhook-secret` | `INTRAPAY_WEBHOOK_SECRET` | Segredo para validação de webhooks | Não |
+
+### Opção 2: Configuração via Arquivo .env
+
+Ideal para deploy em servidores ou se preferir não passar credenciais via CLI.
+
+1.  Clone o repositório e instale as dependências:
+    ```bash
+    npm install
+    ```
+2.  Copie o arquivo de exemplo:
+    ```bash
+    cp .env.example .env
+    ```
+3.  Preencha o arquivo `.env` com suas credenciais:
+    ```env
+    INTRAPAY_BASE_URL=https://sandbox.intrapay.com.br
+    INTRAPAY_CLIENT_KEY=sua_chave
+    INTRAPAY_CLIENT_SECRET=seu_segredo
+    INTRAPAY_ENV=sandbox
+    PORT=4000
+    ```
+
+## Execução
+
+### Desenvolvimento
+```bash
+npm run dev
+# Ou passando argumentos:
+npx tsx src/mcp/server.ts --client-key=...
+```
+
+### Produção (Build)
+```bash
+npm run build
+npm start
+```
+
+## Conectando com Outros Clientes
+
+### VS Code (Extensão MCP)
+Execute no terminal:
+```bash
+code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"http://localhost:4000/mcp\"}"
+```
+
+### Trae (Windows)
+Edite o arquivo `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`:
+
+```json
+{
+  "servers": {
+    "intrapay": {
+      "type": "http",
+      "url": "http://localhost:4000/mcp",
+      "metadata": {
+        "name": "intrapay-mcp",
+        "version": "1.0.0",
+        "description": "MCP server para operações Pix via Intra Pay"
       }
     }
   }
-  ```
-
-- Cursor:
-  - Abra Settings → MCP → Add Server.
-  - Selecione transporte HTTP e informe `http://localhost:4000/mcp`.
-  - Confirme e peça ao agente para listar tools e executar `intrapay_health_check`.
-
-- Claude Desktop:
-  - CLI: `claude mcp add --transport http intrapay http://localhost:4000/mcp`
-  - Alternativa manual (dependendo da versão): Preferências → MCP → Add Server → HTTP → `http://localhost:4000/mcp`.
-
-- Produção (Railway/Vercel):
-  - Substitua `http://localhost:4000/mcp` por `https://<seu-domínio>/mcp` para clientes MCP.
-
-## Uso Programático (MCP Client)
-```ts
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-
-const transport = new StreamableHTTPClientTransport({ url: 'http://localhost:4000/mcp' });
-const client = new Client({ name: 'agent', version: '1.0.0' }, { capabilities: {} });
-await client.connect(transport);
-
-await client.request({ method: 'tools/list' });
-
-const result = await client.request({
-  method: 'tools/call',
-  params: {
-    name: 'intrapay_pix_create_static_qrcode',
-    args: { amount: 150.5, description: 'Serviço', metadata: { pixKeyId: '123e4567-e89b-12d3-a456-426614174000' } },
-  },
-});
-console.log(result);
+}
 ```
 
+### Cursor
+1.  Vá em **Settings** > **MCP** > **Add Server**.
+2.  Selecione transporte **HTTP**.
+3.  URL: `http://localhost:4000/mcp` (certifique-se que o servidor esteja rodando).
+
 ## Tools Disponíveis
-- `intrapay_health_check`
-- `intrapay_pix_create_static_qrcode`
-- `intrapay_pix_create_dynamic_immediate_qrcode`
-- `intrapay_pix_create_dynamic_duedate_qrcode`
-- `intrapay_pix_get_charge_status`
-- `intrapay_pix_cash_out_by_account`
-- `intrapay_pix_cash_out_by_key`
-- `intrapay_pix_cash_out_by_emv`
-- `intrapay_webhook_create`
-- `intrapay_webhook_list`
 
-## Playbooks
-- QR Code estático: `Use intrapay_pix_create_static_qrcode com amount=150.00, description="Serviço", metadata.pixKeyId="<uuid-da-chave>".`
-- QR dinâmico imediato: `Use intrapay_pix_create_dynamic_immediate_qrcode com amount=240.00, description="Serviço", additionalInfo.pixKeyId="<uuid>".`
-- QR com vencimento: `Use intrapay_pix_create_dynamic_duedate_qrcode com amount=150.75, description="Consultoria", dueDate="2025-12-31", additionalInfo.pixKeyId="<uuid>".`
-- Status pagamento: `Use intrapay_pix_get_charge_status com txid="E87452H20251024001".` (retorna NOT_IMPLEMENTED se o endpoint não existir).
-- Cash-out por chave: `Use intrapay_pix_cash_out_by_key com amount=25, pixKey="<EVP>", description="Pagamento" e metadata.endtoEndId/account/owner.`
-- Cash-out por EMV: `Use intrapay_pix_cash_out_by_emv com amount=2500 e emv="<payload EMV>".`
-- Webhooks: `Use intrapay_webhook_create com url="https://meuapp/webhooks/intrapay" e events=["pix-payment-in"].` e `intrapay_webhook_list`.
+O servidor expõe as seguintes ferramentas para o agente:
 
-## Contratos da Intra Pay
-- Autenticação: `POST /api/financial/v1/auth/token` → `{ clientToken, expiresIn }` (Bearer 15 min; exige allowlist de IP).
-- Pix Estático: `{ pixKeyId, amount, additionalInformation? }` → EMV + `transactionIdentification`.
-- Pix Dinâmico Imediato: `{ pixKeyId, amount, additionalInformation?, debtor?, payerQuestion?, expiration? }`.
-- Pix Dinâmico com Vencimento: `POST /api/financial/v1/pix-cash-in/duedate` com `debtor`, descontos, juros/multa, `duedate` futura.
-- Cash Out por Conta: `{ account, branch, bank, amount, taxId, name, accountType, description?, password? }`.
-- Cash Out por Chave: `{ key, keyType, endtoEndId, account, owner, amount?, description? }`.
-- Cash Out por EMV: pagamento via QR/EMV com duas etapas.
+*   `intrapay_health_check`: Verifica o status da conexão.
+*   `intrapay_pix_create_static_qrcode`: Gera um QR Code Pix estático.
+*   `intrapay_pix_create_dynamic_immediate_qrcode`: Gera um Pix dinâmico para pagamento imediato.
+*   `intrapay_pix_create_dynamic_duedate_qrcode`: Gera um Pix dinâmico com data de vencimento.
+*   `intrapay_pix_get_charge_status`: Consulta o status de uma cobrança.
+*   `intrapay_pix_cash_out_by_account`: Realiza transferência Pix para conta bancária.
+*   `intrapay_pix_cash_out_by_key`: Realiza transferência Pix via chave (CPF, Email, etc.).
+*   `intrapay_pix_cash_out_by_emv`: Realiza pagamento lendo um código "Copia e Cola" (EMV).
+*   `intrapay_webhook_create`: Registra um novo webhook.
+*   `intrapay_webhook_list`: Lista os webhooks cadastrados.
 
-### Observações de Endpoints
-- Confirmados: `POST /api/financial/v1/auth/token`, `POST /api/financial/v1/pix-cash-in/duedate`.
-- Ajustáveis: editar `PATHS` em `src/intrapay/client.ts:24` se a doc oficial usar caminhos diferentes.
+## Deploy na Nuvem (Railway/Vercel)
 
-## Segurança e Logs
-- Não logar segredos (clientSecret, etc.).
-- Logs incluem método, endpoint, status, `txid`/`transactionId`.
-- Erros padronizados para DX em agentes.
+Para deploy em produção, recomenda-se o uso de variáveis de ambiente.
 
-## Validação de Webhooks
-- Se houver assinatura/segredo, usar `INTRAPAY_WEBHOOK_SECRET`; exemplo de verificação com HMAC incluído.
+1.  Crie um projeto na Railway/Vercel conectado a este repositório.
+2.  Configure as variáveis de ambiente (`INTRAPAY_CLIENT_KEY`, etc.) no painel do provedor.
+3.  O comando de inicialização é `npm start`.
+4.  A porta será definida automaticamente pela variável `PORT` fornecida pela plataforma.
 
-## Testes
-- `npm run test` executa validações de Zod e client com mocks.
+## Segurança
 
-## Scripts
-- `dev`: servidor MCP em desenvolvimento
-- `build`: build com `tsup`
-- `start`: inicia servidor do build
-- `test`: Vitest
+*   **Credenciais**: Nunca commite suas chaves ou arquivo `.env`. Use a configuração via argumentos CLI no cliente MCP para maior segurança local.
+*   **Logs**: O sistema evita logar informações sensíveis, mas registra metadados de transações (`txid`) para auditoria.
+*   **IP Allowlist**: Lembre-se de autorizar o IP do servidor (ou da sua máquina) no painel da Intra Pay.
 
-## Deploy na Railway (Passo a Passo)
-- Pré-requisitos: conta na Railway e acesso ao repositório GitHub.
-- Passos:
-  - Crie um novo projeto na Railway e conecte ao repositório `Intra-Pay/mcp-server`.
-  - Em Variables, configure:
-    - `INTRAPAY_BASE_URL=https://api.intrapay.io`
-    - `INTRAPAY_CLIENT_KEY=...`
-    - `INTRAPAY_CLIENT_SECRET=...`
-    - `INTRAPAY_ENV=sandbox` ou `production`
-    - `INTRAPAY_WEBHOOK_SECRET` (opcional)
-  - Start command: `npm start`.
-  - A Railway define `PORT` automaticamente; o servidor usa esse valor.
-  - O build ocorre no `postinstall` (`npm run build`), já configurado no `package.json`.
-  - Após o deploy, o MCP ficará disponível em `POST https://<seu-domínio>/mcp` e health em `GET https://<seu-domínio>/health`.
+## Licença
 
-### Dicas de Produção
-- Revise políticas de retry (já implementadas) e monitore logs.
-- Garanta allowlist de IP no dashboard da Intra Pay.
-- Use `mcp.json` para discovery dos tools em clientes MCP.
+Este projeto é de uso livre para integração com a API da Intra Pay.

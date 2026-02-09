@@ -1,7 +1,22 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { parseArgs } from 'node:util';
 
 dotenv.config();
+
+// Parse command line arguments
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    'client-key': { type: 'string' },
+    'client-secret': { type: 'string' },
+    'base-url': { type: 'string' },
+    'environment': { type: 'string' },
+    'webhook-secret': { type: 'string' },
+    'port': { type: 'string' },
+  },
+  strict: false,
+});
 
 const EnvSchema = z.object({
   INTRAPAY_BASE_URL: z.string().url(),
@@ -15,14 +30,26 @@ const EnvSchema = z.object({
     .default('4000'),
 });
 
-const parsed = EnvSchema.safeParse(process.env);
+// Merge CLI args with process.env
+// CLI args take precedence over environment variables
+const configSource = {
+  ...process.env,
+  INTRAPAY_CLIENT_KEY: values['client-key'] ?? process.env.INTRAPAY_CLIENT_KEY,
+  INTRAPAY_CLIENT_SECRET: values['client-secret'] ?? process.env.INTRAPAY_CLIENT_SECRET,
+  INTRAPAY_BASE_URL: values['base-url'] ?? process.env.INTRAPAY_BASE_URL,
+  INTRAPAY_ENV: values['environment'] ?? process.env.INTRAPAY_ENV,
+  INTRAPAY_WEBHOOK_SECRET: values['webhook-secret'] ?? process.env.INTRAPAY_WEBHOOK_SECRET,
+  PORT: values['port'] ?? process.env.PORT,
+};
+
+const parsed = EnvSchema.safeParse(configSource);
 
 if (!parsed.success) {
   throw new Error(
     JSON.stringify({
       ok: false,
       errorCode: 'CONFIG_ERROR',
-      message: 'Variáveis de ambiente inválidas',
+      message: 'Variáveis de ambiente ou argumentos inválidos. Verifique se as credenciais foram passadas.',
       details: parsed.error.flatten(),
     })
   );
