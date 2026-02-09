@@ -21,6 +21,8 @@ import {
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
+const BASE_URL = 'https://api.intrapay.io';
+
 const PATHS = {
   authToken: '/api/financial/v1/auth/token',
   cashInStatic: '/api/financial/v1/pix-cash-in/static',
@@ -51,7 +53,6 @@ class TokenCache {
 }
 
 export interface IntraPayClientConfig {
-  baseUrl: string;
   clientKey: string;
   clientSecret: string;
 }
@@ -65,7 +66,7 @@ export class IntraPayClient {
   }
 
   private async request<T>(path: string, method: HttpMethod, body?: unknown, auth = true): Promise<T> {
-    const url = `${this.config.baseUrl}${path}`;
+    const url = `${BASE_URL}${path}`;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (auth) {
       const token = await this.getToken();
@@ -181,7 +182,6 @@ export class IntraPayClient {
 }
 
 export const intrapayClient = new IntraPayClient({
-  baseUrl: env.baseUrl,
   clientKey: env.clientKey,
   clientSecret: env.clientSecret,
 });

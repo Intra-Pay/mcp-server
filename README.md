@@ -18,46 +18,27 @@ Este projeto inclui um cliente HTTP tipado, schemas validados com Zod e resposta
 
 ## Instalação e Configuração
 
-Você pode configurar as credenciais de duas formas: via **arquivo `.env`** (para servidores dedicados) ou via **argumentos de linha de comando** (recomendado para uso local com clientes MCP como Claude Desktop).
+O servidor MCP da Intra Pay funciona exclusivamente em **Produção** e se conecta automaticamente à API oficial (`api.intrapay.io`).
+
+Você só precisa fornecer suas credenciais (`client-key` e `client-secret`).
 
 ### Opção 1: Configuração via Cliente MCP (Recomendado)
 
 Esta opção é ideal para rodar localmente sem precisar criar arquivos de configuração no servidor. As credenciais ficam salvas apenas na configuração do seu cliente MCP.
 
-#### Exemplos de Configuração (Claude Desktop)
+#### Claude Desktop
 
-Adicione a configuração ao seu arquivo `claude_desktop_config.json`.
+Adicione a configuração ao seu arquivo `claude_desktop_config.json`:
 
-**Ambiente de Sandbox (Testes):**
 ```json
 {
   "mcpServers": {
-    "intrapay-sandbox": {
-      "command": "node",
-      "args": [
-        "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
-        "--client-key=SUA_KEY_SANDBOX",
-        "--client-secret=SEU_SECRET_SANDBOX",
-        "--environment=sandbox",
-        "--base-url=https://sandbox.intrapay.com.br"
-      ]
-    }
-  }
-}
-```
-
-**Ambiente de Produção:**
-```json
-{
-  "mcpServers": {
-    "intrapay-prod": {
+    "intrapay": {
       "command": "node",
       "args": [
         "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
         "--client-key=SUA_KEY_PRODUCAO",
-        "--client-secret=SEU_SECRET_PRODUCAO",
-        "--environment=production",
-        "--base-url=https://api.intrapay.com.br"
+        "--client-secret=SEU_SECRET_PRODUCAO"
       ]
     }
   }
@@ -70,8 +51,6 @@ Adicione a configuração ao seu arquivo `claude_desktop_config.json`.
 | :--- | :--- | :--- | :--- |
 | `--client-key` | `INTRAPAY_CLIENT_KEY` | Sua chave de cliente Intra Pay | Sim |
 | `--client-secret` | `INTRAPAY_CLIENT_SECRET` | Seu segredo de cliente Intra Pay | Sim |
-| `--environment` | `INTRAPAY_ENV` | Ambiente (`sandbox` ou `production`) | Sim |
-| `--base-url` | `INTRAPAY_BASE_URL` | URL base da API | Sim |
 | `--port` | `PORT` | Porta do servidor (padrão: 4000) | Não |
 | `--webhook-secret` | `INTRAPAY_WEBHOOK_SECRET` | Segredo para validação de webhooks | Não |
 
@@ -89,10 +68,8 @@ Ideal para deploy em servidores ou se preferir não passar credenciais via CLI.
     ```
 3.  Preencha o arquivo `.env` com suas credenciais:
     ```env
-    INTRAPAY_BASE_URL=https://sandbox.intrapay.com.br
     INTRAPAY_CLIENT_KEY=sua_chave
     INTRAPAY_CLIENT_SECRET=seu_segredo
-    INTRAPAY_ENV=sandbox
     PORT=4000
     ```
 
@@ -114,9 +91,9 @@ npm start
 ## Conectando com Outros Clientes
 
 ### VS Code (Extensão MCP)
-Execute no terminal:
+Execute no terminal (substitua a URL se estiver usando o servidor hospedado):
 ```bash
-code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"http://localhost:4000/mcp\"}"
+code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"https://mcp.intrapay.io/mcp\"}"
 ```
 
 ### Trae (Windows)
@@ -127,7 +104,7 @@ Edite o arquivo `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`:
   "servers": {
     "intrapay": {
       "type": "http",
-      "url": "http://localhost:4000/mcp",
+      "url": "https://mcp.intrapay.io/mcp",
       "metadata": {
         "name": "intrapay-mcp",
         "version": "1.0.0",
@@ -141,7 +118,7 @@ Edite o arquivo `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`:
 ### Cursor
 1.  Vá em **Settings** > **MCP** > **Add Server**.
 2.  Selecione transporte **HTTP**.
-3.  URL: `http://localhost:4000/mcp` (certifique-se que o servidor esteja rodando).
+3.  URL: `https://mcp.intrapay.io/mcp` (Servidor Oficial) ou `http://localhost:4000/mcp` (Local).
 
 ## Tools Disponíveis
 
@@ -163,7 +140,7 @@ O servidor expõe as seguintes ferramentas para o agente:
 Para deploy em produção, recomenda-se o uso de variáveis de ambiente.
 
 1.  Crie um projeto na Railway/Vercel conectado a este repositório.
-2.  Configure as variáveis de ambiente (`INTRAPAY_CLIENT_KEY`, etc.) no painel do provedor.
+2.  Configure as variáveis de ambiente (`INTRAPAY_CLIENT_KEY`, `INTRAPAY_CLIENT_SECRET`) no painel do provedor.
 3.  O comando de inicialização é `npm start`.
 4.  A porta será definida automaticamente pela variável `PORT` fornecida pela plataforma.
 

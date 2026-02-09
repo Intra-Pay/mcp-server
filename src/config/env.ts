@@ -10,8 +10,6 @@ const { values } = parseArgs({
   options: {
     'client-key': { type: 'string' },
     'client-secret': { type: 'string' },
-    'base-url': { type: 'string' },
-    'environment': { type: 'string' },
     'webhook-secret': { type: 'string' },
     'port': { type: 'string' },
   },
@@ -19,10 +17,8 @@ const { values } = parseArgs({
 });
 
 const EnvSchema = z.object({
-  INTRAPAY_BASE_URL: z.string().url().optional(),
   INTRAPAY_CLIENT_KEY: z.string().min(1).optional(),
   INTRAPAY_CLIENT_SECRET: z.string().min(1).optional(),
-  INTRAPAY_ENV: z.enum(['sandbox', 'production']).optional(),
   INTRAPAY_WEBHOOK_SECRET: z.string().optional(),
   PORT: z
     .string()
@@ -36,8 +32,6 @@ const configSource = {
   ...process.env,
   INTRAPAY_CLIENT_KEY: values['client-key'] ?? process.env.INTRAPAY_CLIENT_KEY,
   INTRAPAY_CLIENT_SECRET: values['client-secret'] ?? process.env.INTRAPAY_CLIENT_SECRET,
-  INTRAPAY_BASE_URL: values['base-url'] ?? process.env.INTRAPAY_BASE_URL,
-  INTRAPAY_ENV: values['environment'] ?? process.env.INTRAPAY_ENV,
   INTRAPAY_WEBHOOK_SECRET: values['webhook-secret'] ?? process.env.INTRAPAY_WEBHOOK_SECRET,
   PORT: values['port'] ?? process.env.PORT,
 };
@@ -57,10 +51,9 @@ if (!parsed.success) {
 
 // Fallback values or throw only when strictly needed during runtime
 export const env = {
-  baseUrl: parsed.data.INTRAPAY_BASE_URL || '',
+  baseUrl: 'https://api.intrapay.io',
   clientKey: parsed.data.INTRAPAY_CLIENT_KEY || '',
   clientSecret: parsed.data.INTRAPAY_CLIENT_SECRET || '',
-  environment: parsed.data.INTRAPAY_ENV || 'sandbox',
   webhookSecret: parsed.data.INTRAPAY_WEBHOOK_SECRET,
   port: parseInt(parsed.data.PORT, 10),
 };
