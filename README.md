@@ -19,7 +19,14 @@ Este projeto inclui um cliente HTTP tipado, schemas validados com Zod e resposta
 ## Instalação e Configuração
 
 O servidor MCP da Intra Pay funciona exclusivamente em **Produção** (`api.intrapay.io`).
-Para conectar, você só precisa fornecer suas credenciais (`client-key` e `client-secret`) no provedor do servidor, não no cliente MCP.
+
+### Sobre Autenticação e Segurança
+Neste modelo de servidor remoto (SSE/HTTP), **as credenciais da API Intra Pay (`client-key` e `client-secret`) são configuradas no servidor (Lado do Servidor)** e não no seu cliente MCP (Trae/Cursor).
+
+*   **Para uso compartilhado/equipes**: O servidor hospedado em `mcp.intrapay.io` utiliza as credenciais configuradas no deploy.
+*   **Para uso individual**: Se cada desenvolvedor precisa usar suas próprias credenciais, **cada um deve rodar sua própria instância do servidor** (localmente ou via deploy pessoal).
+
+---
 
 ### Configuração Remota (Recomendado)
 
@@ -54,7 +61,7 @@ Edite o arquivo de configuração (Windows: `%APPDATA%\Trae\User\mcp.json`):
 
 ### Configuração Local (Avançado)
 
-Use esta opção apenas se precisar rodar o servidor na sua própria máquina (ex: para desenvolvimento ou se o cliente MCP não suportar SSE remoto).
+Use esta opção se precisar usar **suas próprias credenciais** Intra Pay.
 
 #### Claude Desktop (Local)
 
@@ -83,7 +90,7 @@ npm install
 # Build
 npm run build
 
-# Rodar
+# Rodar com suas credenciais
 node dist/server.js --client-key=SUA_KEY --client-secret=SEU_SECRET
 ```
 
@@ -104,7 +111,7 @@ O servidor expõe as seguintes ferramentas para o agente:
 
 ## Deploy na Nuvem (Railway/Vercel)
 
-Se quiser hospedar sua própria instância:
+Se quiser hospedar sua própria instância com suas chaves:
 
 1.  Crie um projeto na Railway/Vercel conectado a este repositório.
 2.  Configure as variáveis de ambiente (`INTRAPAY_CLIENT_KEY`, `INTRAPAY_CLIENT_SECRET`) no painel do provedor.
