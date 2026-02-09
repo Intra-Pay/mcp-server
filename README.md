@@ -14,90 +14,19 @@ Este projeto inclui um cliente HTTP tipado, schemas validados com Zod e resposta
 
 ## Requisitos
 
-*   Node.js 20 ou superior.
+*   Node.js 20 ou superior (apenas se for rodar localmente).
 
 ## Instalação e Configuração
 
-O servidor MCP da Intra Pay funciona exclusivamente em **Produção** e se conecta automaticamente à API oficial (`api.intrapay.io`).
+O servidor MCP da Intra Pay funciona exclusivamente em **Produção** (`api.intrapay.io`).
+Para conectar, você só precisa fornecer suas credenciais (`client-key` e `client-secret`) no provedor do servidor, não no cliente MCP.
 
-Você só precisa fornecer suas credenciais (`client-key` e `client-secret`).
+### Configuração Remota (Recomendado)
 
-### Opção 1: Configuração via Cliente MCP (Recomendado)
+O servidor oficial já está hospedado e pronto para uso em: `https://mcp.intrapay.io/mcp`
 
-Esta opção é ideal para rodar localmente sem precisar criar arquivos de configuração no servidor. As credenciais ficam salvas apenas na configuração do seu cliente MCP.
-
-#### Claude Desktop
-
-Adicione a configuração ao seu arquivo `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "intrapay": {
-      "command": "node",
-      "args": [
-        "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
-        "--client-key=SUA_KEY_PRODUCAO",
-        "--client-secret=SEU_SECRET_PRODUCAO"
-      ]
-    }
-  }
-}
-```
-
-#### Argumentos Disponíveis
-
-| Argumento | Variável de Ambiente | Descrição | Obrigatório |
-| :--- | :--- | :--- | :--- |
-| `--client-key` | `INTRAPAY_CLIENT_KEY` | Sua chave de cliente Intra Pay | Sim |
-| `--client-secret` | `INTRAPAY_CLIENT_SECRET` | Seu segredo de cliente Intra Pay | Sim |
-| `--port` | `PORT` | Porta do servidor (padrão: 4000) | Não |
-| `--webhook-secret` | `INTRAPAY_WEBHOOK_SECRET` | Segredo para validação de webhooks | Não |
-
-### Opção 2: Configuração via Arquivo .env
-
-Ideal para deploy em servidores ou se preferir não passar credenciais via CLI.
-
-1.  Clone o repositório e instale as dependências:
-    ```bash
-    npm install
-    ```
-2.  Copie o arquivo de exemplo:
-    ```bash
-    cp .env.example .env
-    ```
-3.  Preencha o arquivo `.env` com suas credenciais:
-    ```env
-    INTRAPAY_CLIENT_KEY=sua_chave
-    INTRAPAY_CLIENT_SECRET=seu_segredo
-    PORT=4000
-    ```
-
-## Execução
-
-### Desenvolvimento
-```bash
-npm run dev
-# Ou passando argumentos:
-npx tsx src/mcp/server.ts --client-key=...
-```
-
-### Produção (Build)
-```bash
-npm run build
-npm start
-```
-
-## Conectando com Outros Clientes
-
-### VS Code (Extensão MCP)
-Execute no terminal (substitua a URL se estiver usando o servidor hospedado):
-```bash
-code --add-mcp "{\"name\":\"intrapay\",\"type\":\"http\",\"url\":\"https://mcp.intrapay.io/mcp\"}"
-```
-
-### Trae (Windows)
-Edite o arquivo `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`:
+#### Trae (Windows/Mac)
+Edite o arquivo de configuração (Windows: `%APPDATA%\Trae\User\mcp.json`):
 
 ```json
 {
@@ -115,10 +44,48 @@ Edite o arquivo `C:\Users\<seu-usuario>\AppData\Roaming\Trae\User\mcp.json`:
 }
 ```
 
-### Cursor
+#### Cursor
 1.  Vá em **Settings** > **MCP** > **Add Server**.
-2.  Selecione transporte **HTTP**.
-3.  URL: `https://mcp.intrapay.io/mcp` (Servidor Oficial) ou `http://localhost:4000/mcp` (Local).
+2.  Selecione transporte **HTTP** (ou SSE).
+3.  URL: `https://mcp.intrapay.io/mcp`
+4.  Nome: `intrapay`
+
+---
+
+### Configuração Local (Avançado)
+
+Use esta opção apenas se precisar rodar o servidor na sua própria máquina (ex: para desenvolvimento ou se o cliente MCP não suportar SSE remoto).
+
+#### Claude Desktop (Local)
+
+Adicione ao `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "intrapay": {
+      "command": "node",
+      "args": [
+        "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
+        "--client-key=SUA_KEY_PRODUCAO",
+        "--client-secret=SEU_SECRET_PRODUCAO"
+      ]
+    }
+  }
+}
+```
+
+#### Executando Manualmente
+```bash
+# Instalar dependências
+npm install
+
+# Build
+npm run build
+
+# Rodar
+node dist/server.js --client-key=SUA_KEY --client-secret=SEU_SECRET
+```
 
 ## Tools Disponíveis
 
@@ -137,18 +104,16 @@ O servidor expõe as seguintes ferramentas para o agente:
 
 ## Deploy na Nuvem (Railway/Vercel)
 
-Para deploy em produção, recomenda-se o uso de variáveis de ambiente.
+Se quiser hospedar sua própria instância:
 
 1.  Crie um projeto na Railway/Vercel conectado a este repositório.
 2.  Configure as variáveis de ambiente (`INTRAPAY_CLIENT_KEY`, `INTRAPAY_CLIENT_SECRET`) no painel do provedor.
 3.  O comando de inicialização é `npm start`.
-4.  A porta será definida automaticamente pela variável `PORT` fornecida pela plataforma.
 
 ## Segurança
 
-*   **Credenciais**: Nunca commite suas chaves ou arquivo `.env`. Use a configuração via argumentos CLI no cliente MCP para maior segurança local.
+*   **Credenciais**: Nunca commite suas chaves ou arquivo `.env`.
 *   **Logs**: O sistema evita logar informações sensíveis, mas registra metadados de transações (`txid`) para auditoria.
-*   **IP Allowlist**: Lembre-se de autorizar o IP do servidor (ou da sua máquina) no painel da Intra Pay.
 
 ## Licença
 
