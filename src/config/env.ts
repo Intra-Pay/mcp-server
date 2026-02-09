@@ -19,10 +19,10 @@ const { values } = parseArgs({
 });
 
 const EnvSchema = z.object({
-  INTRAPAY_BASE_URL: z.string().url(),
-  INTRAPAY_CLIENT_KEY: z.string().min(1),
-  INTRAPAY_CLIENT_SECRET: z.string().min(1),
-  INTRAPAY_ENV: z.enum(['sandbox', 'production']),
+  INTRAPAY_BASE_URL: z.string().url().optional(),
+  INTRAPAY_CLIENT_KEY: z.string().min(1).optional(),
+  INTRAPAY_CLIENT_SECRET: z.string().min(1).optional(),
+  INTRAPAY_ENV: z.enum(['sandbox', 'production']).optional(),
   INTRAPAY_WEBHOOK_SECRET: z.string().optional(),
   PORT: z
     .string()
@@ -49,17 +49,18 @@ if (!parsed.success) {
     JSON.stringify({
       ok: false,
       errorCode: 'CONFIG_ERROR',
-      message: 'Variáveis de ambiente ou argumentos inválidos. Verifique se as credenciais foram passadas.',
+      message: 'Variáveis de ambiente ou argumentos inválidos.',
       details: parsed.error.flatten(),
     })
   );
 }
 
+// Fallback values or throw only when strictly needed during runtime
 export const env = {
-  baseUrl: parsed.data.INTRAPAY_BASE_URL,
-  clientKey: parsed.data.INTRAPAY_CLIENT_KEY,
-  clientSecret: parsed.data.INTRAPAY_CLIENT_SECRET,
-  environment: parsed.data.INTRAPAY_ENV,
+  baseUrl: parsed.data.INTRAPAY_BASE_URL || '',
+  clientKey: parsed.data.INTRAPAY_CLIENT_KEY || '',
+  clientSecret: parsed.data.INTRAPAY_CLIENT_SECRET || '',
+  environment: parsed.data.INTRAPAY_ENV || 'sandbox',
   webhookSecret: parsed.data.INTRAPAY_WEBHOOK_SECRET,
   port: parseInt(parsed.data.PORT, 10),
 };
