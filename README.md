@@ -24,21 +24,40 @@ Você pode configurar as credenciais de duas formas: via **arquivo `.env`** (par
 
 Esta opção é ideal para rodar localmente sem precisar criar arquivos de configuração no servidor. As credenciais ficam salvas apenas na configuração do seu cliente MCP.
 
-#### Claude Desktop
+#### Exemplos de Configuração (Claude Desktop)
 
-Adicione a configuração ao seu arquivo `claude_desktop_config.json`:
+Adicione a configuração ao seu arquivo `claude_desktop_config.json`.
 
+**Ambiente de Sandbox (Testes):**
 ```json
 {
   "mcpServers": {
-    "intrapay": {
+    "intrapay-sandbox": {
       "command": "node",
       "args": [
         "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
-        "--client-key=SUA_CLIENT_KEY",
-        "--client-secret=SEU_CLIENT_SECRET",
+        "--client-key=SUA_KEY_SANDBOX",
+        "--client-secret=SEU_SECRET_SANDBOX",
         "--environment=sandbox",
         "--base-url=https://sandbox.intrapay.com.br"
+      ]
+    }
+  }
+}
+```
+
+**Ambiente de Produção:**
+```json
+{
+  "mcpServers": {
+    "intrapay-prod": {
+      "command": "node",
+      "args": [
+        "C:\\Caminho\\Para\\mcp-server\\dist\\server.js",
+        "--client-key=SUA_KEY_PRODUCAO",
+        "--client-secret=SEU_SECRET_PRODUCAO",
+        "--environment=production",
+        "--base-url=https://api.intrapay.com.br"
       ]
     }
   }
