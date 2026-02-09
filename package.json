@@ -9,8 +9,7 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier -w .",
-    "postinstall": "npm run build"
+    "format": "prettier -w ."
   },
   "engines": { "node": ">=20" },
   "dependencies": {
